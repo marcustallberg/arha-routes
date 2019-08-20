@@ -61,8 +61,9 @@ class ArhaRoutes {
       $required_params = ['slug', 'post_type'];
       ArhaHelpers::check_required_params($request, $required_params);
 
+      $filter    = 'arha_routes/post_excluded_post_types';
       $post_type = $request->get_param('post_type');
-      ArhaHelpers::check_excluded_post_types($post_type);
+      ArhaHelpers::check_excluded_post_types($filter, $post_type);
 
       $slug = $request->get_param('slug');
 
@@ -150,8 +151,9 @@ class ArhaRoutes {
       $required_params = ['post_type', 'posts_per_page', 'paged'];
       ArhaHelpers::check_required_params($request, $required_params);
 
+      $filter    = 'arha_routes/archive_excluded_post_types';
       $post_type = $request->get_param('post_type');
-      ArhaHelpers::check_excluded_post_types($post_type);
+      ArhaHelpers::check_excluded_post_types($filter, $post_type);
 
       $posts_per_page = $request->get_param('posts_per_page');
       $posts_per_page = (int)$posts_per_page;

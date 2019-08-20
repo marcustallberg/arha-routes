@@ -27,12 +27,14 @@ Wordpress plugin that serves content through REST routes.
 
 # Filters
 
-- To exclude post types from `post`- and `archive`-routes, use `arha_routes/rest_excluded_post_types`-filter
+- To exclude querying specific post types from `post`- and `archive`-routes, use following
+  filters:
 
 ```
-add_filter('arha_routes/rest_excluded_post_types', 'exclude_post_types');
+add_filter('arha_routes/archive_excluded_post_types', 'exclude_post_types');
+add_filter('arha_routes/post_excluded_post_types', 'exclude_post_types');
 function exclude_post_types($excluded_post_types) {
-  $excluded_post_types = ['post', 'product_order'];
+  $excluded_post_types = ['post'];
   return $excluded_post_types;
 }
 ```
@@ -83,10 +85,3 @@ function format_options($options) {
   return $options;
 }
 ```
-
-# TODO
-
-- Add post comments to posts (if not disabled)
-- Support multiple orderbys in archive endpoint
-- separate `arha_routes/rest_excluded_post_types`-filter for post and archive
-  endpoint?

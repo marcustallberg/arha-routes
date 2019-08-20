@@ -6,13 +6,14 @@ if (!defined('WPINC')) {
 
 class ArhaHelpers {
   /**
-   * Function checks if passed in $post_type is found in 'arha_routes/excluded_post_types'-filter.
-   * If not, function throw Exception.
+   * Function checks if passed in $post_type is found in results of passed in $filter.
    *
+   * If not, function throw Exception.
+   * @param String $filter
    * @param String $post_type
    */
-  public static function check_excluded_post_types($post_type) {
-    $excluded_post_types = apply_filters('arha_routes/rest_excluded_post_types', []);
+  public static function check_excluded_post_types($filter, $post_type) {
+    $excluded_post_types = apply_filters($filter, []);
     if (sizeof($excluded_post_types) === 0) {
       return;
     }
