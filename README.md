@@ -2,33 +2,17 @@
 
 Wordpress plugin that serves content through REST routes.
 
-# How to use
+## Available Routes
 
-- Activate the plugin
-- Need to fetch post or custom post with slug?
-  - Navigate to `/wp-json/arha/v1/post?post_type=POST_TYPE_SLUG&slug=POSTS_SLUG`
-- Need to fetch page with path?
-  - Navigate to `/wp-json/arha/v1/page?path=POSTS_PATH`
-- Need to fetch ACF options pages?
-  - Navigate to `/wp-json/arha/v1/options`
-- Need to fetch many posts for archive?
-  - Navigate to
-    `/wp-json/arha/v1/archive?post_type=POST_TYPE_SLUG&posts_per_page=POSTS_PER_PAGE&paged=PAGED`
-  - By default query uses `orderby => date` and `order => DESC`
-  - Optionally, you can add your own `orderby`- and `order`-param if you need
-    to override default one.
-  - Ordering by meta-field works similarly how it's done with `get_posts()`
-    - `orderby` needs to be either `meta_value` or `meta_value_num`
-    - `order` needs to be defined to either `ASC` or `DESC`
-    - `meta_key` needs to be meta-field's slug
-    - example:
-      - `orderby=meta_value_num&order=DESC&meta_key=release_date`
-      - `orderby=meta_value&order=ASC&meta_key=person_name`
+- `/wp-json/arha/v1/post?post_type=POST_TYPE&slug=LUG`
+- `/wp-json/arha/v1/page?path=PATH`
+- `/wp-json/arha/v1/options`
+- `/wp-json/arha/v1/archive?post_type=POST_TYPE&posts_per_page=POSTS_PER_PAGE&paged=PAGED&orderby=ORDERBY&order=ORDER(&meta_key=META_KEY)`
 
-# Filters
+## Filters
 
-- To exclude querying specific post types from `post`- and `archive`-routes, use following
-  filters:
+- To exclude querying specific post types from `post`- and `archive`-routes, you
+  can use following filters:
 
 ```
 add_filter('arha_routes/archive_excluded_post_types', 'exclude_post_types');
@@ -57,27 +41,7 @@ function format_archive_post($post) {
 }
 ```
 
-- To format taxonomy-object, use below filter.
-  In other use cases, you can use `arha_routes/format_post`- or `arha_routes/format_post`-filter.
-
-```
-add_filter('arha_routes/format_taxonomy', 'format_taxonomy');
-function format_taxonomy($taxonomy) {
-  return $taxonomy;
-}
-```
-
-- To format post terms, use below filter.
-  You can use `arha_routes/format_post`- or `arha_routes/format_post`-filter.
-
-```
-add_filter('arha_routes/format_term', 'format_term');
-function format_term($term) {
-  return $term;
-}
-```
-
-- To format `options`-route's results before they are served to client, use `arha_routes/format_options`-filter
+- `options`-route returns empty result by default. To add content to it, use `arha_routes/format_options`-filter
 
 ```
 add_filter('arha_routes/format_options', 'format_options');
@@ -85,3 +49,15 @@ function format_options($options) {
   return $options;
 }
 ```
+
+## Comments
+
+- `Archive`-route supports ordering posts by meta_field
+  - `orderby`-param needs to be either `meta_value` or `meta_value_num`
+  - `order`-param needs to be either `ASC` or `DESC`
+  - `meta_key`-param needs to be meta-field's slug
+  - example:
+    - `orderby=meta_value_num&order=DESC&meta_key=release_date`
+    - `orderby=meta_value&order=ASC&meta_key=person_name`
+  - when ordering by native WP fields, just use `orderby` (field's slug) and
+    `order` (`ASC` or `DESC`)
