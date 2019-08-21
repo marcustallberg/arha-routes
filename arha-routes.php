@@ -11,7 +11,6 @@ if (!defined('WPINC')) {
 }
 
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
-require_once plugin_dir_path(__FILE__) . 'includes/builder.php';
 
 class ArhaRoutes {
   protected $_version;
@@ -33,28 +32,28 @@ class ArhaRoutes {
   public function register_api_endpoints() {
     $namespace = $this->_namespace . '/' . $this->_api_version;
 
-    register_rest_route($namespace, "/page", array(
+    register_rest_route($namespace, "/page", [
       'methods'  => WP_REST_Server::READABLE,
       'callback' => [$this, "get_page"],
-    ));
+    ]);
 
-    register_rest_route($namespace, "/post", array(
+    register_rest_route($namespace, "/post", [
       'methods'  => WP_REST_Server::READABLE,
-      'callback' => [$this, "get_post_type"],
-    ));
+      'callback' => [$this, "get_post"],
+    ]);
 
-    register_rest_route($namespace, "/options", array(
+    register_rest_route($namespace, "/options", [
       'methods'  => WP_REST_Server::READABLE,
       'callback' => [$this, "get_options"],
-    ));
+    ]);
 
-    register_rest_route($namespace, "/archive", array(
+    register_rest_route($namespace, "/archive", [
       'methods'  => WP_REST_Server::READABLE,
       'callback' => [$this, "get_archive"],
-    ));
+    ]);
   }
 
-  public function get_post_type(WP_REST_Request $request) {
+  public function get_post(WP_REST_Request $request) {
     $return_message;
     try {
 
@@ -77,11 +76,7 @@ class ArhaRoutes {
       if (sizeof($posts) == 0) {
         throw new Exception("System didn't find post with post_type '${post_type}' and slug '${slug}'");
       }
-
-      $builder = new ArhaBuilder();
-      $post    = $builder->build_post($posts[0]);
-      // Let plugin user format post to their liking
-      $content = apply_filters('arha_routes/format_post', $post);
+      $content = apply_filters('arha_routes/format_post', $posts[0]);
 
       $return_message = [
         'status'  => 'success',
@@ -110,8 +105,6 @@ class ArhaRoutes {
         throw new Exception("Didn't find page with path '${path}'");
       }
 
-      $builder        = new ArhaBuilder();
-      $content        = $builder->build_post($page);
       $return_message = [
         'status'  => 'success',
         'content' => $content,
@@ -128,10 +121,7 @@ class ArhaRoutes {
   public function get_options(WP_REST_Request $request) {
     $return_message;
     try {
-      $builder = new ArhaBuilder();
-      $options = $builder->build_options();
-      $content = apply_filters('arha_routes/format_options', $options);
-
+      $content        = apply_filters('arha_routes/format_options', []);
       $return_message = [
         'status'  => 'success',
         'content' => $content,
@@ -148,7 +138,7 @@ class ArhaRoutes {
   public function get_archive(WP_REST_Request $request) {
     $return_message;
     try {
-      $required_params = ['post_type', 'posts_per_page', 'paged'];
+      $required_params = ['post_type', 'posts_per_page', 'paged', 'orderby', 'order'];
       ArhaHelpers::check_required_params($request, $required_params);
 
       $filter    = 'arha_routes/archive_excluded_post_types';
@@ -167,48 +157,45 @@ class ArhaRoutes {
         throw new Exception('paged needs to be a number above 1');
       }
 
-      $orderby_param = $request->get_param('orderby');
-      ArhaHelpers::check_orderby_param($orderby_param);
-      $order_param = $request->get_param('order');
-      if ($order_param !== 'ASC' && $order_param !== 'DESC') {
+      $orderby = $request->get_param('orderby');
+      ArhaHelpers::check_orderby_param($orderby);
+      $order = $request->get_param('order');
+      if ($order !== 'ASC' && $order !== 'DESC') {
         throw new Exception('Order param can only be ASC or DESC');
-      }
-
-      // These both need to be defined, if order params are defined
-      if ((!$orderby_param && $order_param) || ($orderby_param && !$order_param)) {
-        throw new Exception('To order posts, define orderby and order param');
       }
 
       $args = [
         'post_type'      => $post_type,
         'posts_per_page' => $posts_per_page,
         'paged'          => $paged,
+        'orderby'        => $orderby,
+        'order'          => $order,
         'status'         => 'publish',
       ];
 
-      if ($orderby_param == 'meta_value' || $orderby_param == 'meta_value_num') {
-        $meta_key_param = $request->get_param('meta_key');
-        if (!$meta_key_param) {
+      if ($orderby == 'meta_value' || $orderby == 'meta_value_num') {
+        $meta_key = $request->get_param('meta_key');
+        if (!$meta_key) {
           throw new Exception("To order posts by meta-field, define meta_key param with meta-field's name");
         }
 
-        $args['meta_key'] = $meta_key_param;
+        $args['meta_key'] = $meta_key;
       }
 
-      $args['orderby'] = $orderby_param ?: 'date';
-      $args['order']   = $order_param ?: 'DESC';
+      $query       = new WP_Query($args);
+      $found_posts = (int)$query->found_posts;
+      $query_posts = $query->posts;
 
-      $posts = get_posts($args);
-
-      $builder     = new ArhaBuilder();
-      $built_posts = array_map([$builder, 'build_post'], $posts);
-      $content     = array_map(function ($post) {
+      $posts = array_map(function ($post) {
         return apply_filters('arha_routes/format_archive_post', $post);
-      }, $built_posts);
+      }, $query_posts);
 
       $return_message = [
         'status'  => 'success',
-        'content' => $content,
+        'content' => [
+          'found_posts' => $found_posts,
+          'posts'       => $posts,
+        ],
       ];
 
     } catch (Exception $e) {

@@ -24,23 +24,6 @@ class ArhaHelpers {
   }
 
   /**
-   * Function iterates $key_array param and tries to remove each iteration's
-   * value from $obj param's keys.
-   *
-   * @param   Array   $key_array  - list of strings
-   * @param   Object  $obj
-   * @return  Object  $obj        - stripped down object 👀
-   */
-  public static function remove_keys_from_object($key_array, $obj) {
-    foreach ($key_array as $key) {
-      if (isset($obj->$key)) {
-        unset($obj->$key);
-      }
-    }
-    return $obj;
-  }
-
-  /**
    * Checks if request object has all required params.
    * if not, function throws Exception.
    *
@@ -57,7 +40,7 @@ class ArhaHelpers {
   }
 
   /**
-   * This function checks if $orderby param is part of a $orderby_values-list which is copied
+   * Function checks if $orderby param is part of a $orderby_values which is copied
    * from WP documentation and throws exception if it's not.
    *
    * @param String $orderby
