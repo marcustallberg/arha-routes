@@ -65,6 +65,9 @@ class ArhaRoutes {
 
       $filter    = 'arha_routes/post_excluded_post_types';
       $post_type = $request->get_param('post_type');
+      if (!post_type_exists($post_type)) {
+        throw new Exception("post_type-param wasn't found on System");
+      }
       ArhaHelpers::check_excluded_post_types($filter, $post_type);
 
       $slug = $request->get_param('slug');
@@ -173,6 +176,9 @@ class ArhaRoutes {
 
       $filter    = 'arha_routes/archive_excluded_post_types';
       $post_type = $request->get_param('post_type');
+      if (!post_type_exists($post_type)) {
+        throw new Exception("Post_type wasn't found on System");
+      }
       ArhaHelpers::check_excluded_post_types($filter, $post_type);
 
       $posts_per_page = $request->get_param('posts_per_page');
