@@ -72,11 +72,13 @@ class ArhaRoutes {
 
       $slug = $request->get_param('slug');
 
+      $post_status = $post_type == 'attachment' ? 'inherit' : 'publish';
+
       $args = [
         'name'        => $slug,
         'post_type'   => $post_type,
         'numberposts' => 1,
-        'post_status' => 'publish',
+        'post_status' => $post_status,
       ];
 
       $lang;
@@ -201,13 +203,15 @@ class ArhaRoutes {
         throw new Exception('Order param can only be ASC or DESC');
       }
 
+      $status = $post_type == 'attachment' ? 'inherit' : 'publish';
+
       $args = [
         'post_type'      => $post_type,
         'posts_per_page' => $posts_per_page,
         'paged'          => $paged,
         'orderby'        => $orderby,
         'order'          => $order,
-        'status'         => 'publish',
+        'status'         => $status,
       ];
 
       if ($orderby == 'meta_value' || $orderby == 'meta_value_num') {
