@@ -1,10 +1,11 @@
 # Arha Routes
 
-Wordpress plugin that serves content through REST routes.
+Wordpress plugin that helps to serve content through REST routes and gives
+customizability to developers through filters.
 
 ## Available Routes
 
-- `/wp-json/arha/v1/post?post_type=POST_TYPE&slug=LUG`
+- `/wp-json/arha/v1/post?post_type=POST_TYPE&slug=SLUG`
 - `/wp-json/arha/v1/page?path=PATH`
 - `/wp-json/arha/v1/options`
 - `/wp-json/arha/v1/archive?post_type=POST_TYPE&posts_per_page=POSTS_PER_PAGE&paged=PAGED&orderby=ORDERBY&order=ORDER(&meta_key=META_KEY)`
@@ -32,6 +33,15 @@ function format_post($post) {
 }
 ```
 
+- To format `page`-route's page before it's served to client, use `arha_routes/format_page`-filter
+
+```
+add_filter('arha_routes/format_page', 'format_page');
+function format_page($page) {
+  return $page;
+}
+```
+
 - To format `archive`-route's posts before they are served to client, use `arha_routes/format_archive_post`-filter
 
 ```
@@ -50,14 +60,24 @@ function format_options($options) {
 }
 ```
 
-## Comments
+## Polylang
 
-- `Archive`-route supports ordering posts by meta_field
-  - `orderby`-param needs to be either `meta_value` or `meta_value_num`
-  - `order`-param needs to be either `ASC` or `DESC`
-  - `meta_key`-param needs to be meta-field's slug
-  - example:
-    - `orderby=meta_value_num&order=DESC&meta_key=release_date`
-    - `orderby=meta_value&order=ASC&meta_key=person_name`
-  - when ordering by native WP fields, just use `orderby` (field's slug) and
-    `order` (`ASC` or `DESC`)
+Arha Routes supports Polylang-plugin, which allows users to create
+content in multiple languages.
+
+Activating Polylang changes how some endpoints work:
+
+- `post`-, `archive`- and `options`-route requires additional `lang`-param
+  - Example: `/wp-json/arha/v1/archive?post_type=products&posts_per_page=10&paged=1&orderby=date&order=ASC&lang=en`
+- `get_page_by_path()` used in `page`-route doesn't support language prefix, so they need to be excluded from `path`-param.
+
+  - Example: Permalink is `http://local.wordpress/zh/info` -> `/wp-json/arha/v1/page?path=/info`
+
+- `options`-route passes `lang`-param forward to `arha_routes/format_options`-filter
+
+```
+add_filter('arha_routes/format_options', 'format_options', 10, 2);
+function format_options($options, $lang) {
+  return $options;
+}
+```

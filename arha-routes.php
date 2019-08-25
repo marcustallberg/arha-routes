@@ -58,6 +58,9 @@ class ArhaRoutes {
     try {
 
       $required_params = ['slug', 'post_type'];
+      if (class_exists('Polylang')) {
+        $required_params[] = 'lang';
+      }
       ArhaHelpers::check_required_params($request, $required_params);
 
       $filter    = 'arha_routes/post_excluded_post_types';
@@ -66,17 +69,30 @@ class ArhaRoutes {
 
       $slug = $request->get_param('slug');
 
-      $posts = get_posts([
+      $args = [
         'name'        => $slug,
         'post_type'   => $post_type,
         'numberposts' => 1,
         'post_status' => 'publish',
-      ]);
+      ];
 
+      $lang;
+      if (class_exists('Polylang')) {
+        $lang         = $request->get_param('lang');
+        $args['lang'] = $lang;
+      }
+
+      $posts = get_posts($args);
       if (sizeof($posts) == 0) {
         throw new Exception("System didn't find post with post_type '${post_type}' and slug '${slug}'");
       }
-      $content = apply_filters('arha_routes/format_post', $posts[0]);
+      $post = $posts[0];
+
+      if (class_exists('Polylang')) {
+        ArhaHelpers::check_post_language($post, $lang);
+      }
+
+      $content = apply_filters('arha_routes/format_post', $post);
 
       $return_message = [
         'status'  => 'success',
@@ -105,6 +121,8 @@ class ArhaRoutes {
         throw new Exception("Didn't find page with path '${path}'");
       }
 
+      $content = apply_filters('arha_routes/format_page', $page);
+
       $return_message = [
         'status'  => 'success',
         'content' => $content,
@@ -121,7 +139,16 @@ class ArhaRoutes {
   public function get_options(WP_REST_Request $request) {
     $return_message;
     try {
-      $content        = apply_filters('arha_routes/format_options', []);
+      $content;
+      if (class_exists('Polylang')) {
+        $required_params = ['lang'];
+        ArhaHelpers::check_required_params($request, $required_params);
+        $lang    = $request->get_param('lang');
+        $content = apply_filters('arha_routes/format_options', [], $lang);
+      } else {
+        $content = apply_filters('arha_routes/format_options', []);
+      }
+
       $return_message = [
         'status'  => 'success',
         'content' => $content,
@@ -139,6 +166,9 @@ class ArhaRoutes {
     $return_message;
     try {
       $required_params = ['post_type', 'posts_per_page', 'paged', 'orderby', 'order'];
+      if (class_exists('Polylang')) {
+        $required_params[] = 'lang';
+      }
       ArhaHelpers::check_required_params($request, $required_params);
 
       $filter    = 'arha_routes/archive_excluded_post_types';
@@ -159,6 +189,7 @@ class ArhaRoutes {
 
       $orderby = $request->get_param('orderby');
       ArhaHelpers::check_orderby_param($orderby);
+
       $order = $request->get_param('order');
       if ($order !== 'ASC' && $order !== 'DESC') {
         throw new Exception('Order param can only be ASC or DESC');
@@ -180,6 +211,11 @@ class ArhaRoutes {
         }
 
         $args['meta_key'] = $meta_key;
+      }
+
+      if (class_exists('Polylang')) {
+        $lang         = $request->get_param('lang');
+        $args['lang'] = $lang;
       }
 
       $query       = new WP_Query($args);
