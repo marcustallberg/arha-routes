@@ -67,14 +67,12 @@ content in multiple languages.
 
 Activating Polylang changes how some endpoints work:
 
-- `post`-, `archive`- and `options`-route requires additional `lang`-param
+- all routes require additional `lang`-param
   - Example: `/wp-json/arha/v1/archive?post_type=products&posts_per_page=10&paged=1&orderby=date&order=ASC&lang=en`
-- `get_page_by_path()` used in `page`-route doesn't support language prefix, so they need to be excluded from `path`-param.
-
-  - Example: Permalink is `http://local.wordpress/zh/info` -> `/wp-json/arha/v1/page?path=/info`
-
+- `page`-route doesn't support language prefix in path, use path after it
+  - Example: Permalink in WP `/zh/info`, use like this `/wp-json/arha/v1/page?path=/info&lang=zh`
 - `options`-route passes `lang`-param forward to `arha_routes/format_options`-filter
-
+  - Developer can then Polylang's language model to this language with `ArhaHelpers::set_polylang_curlang($lang)` if needed.
 ```
 add_filter('arha_routes/format_options', 'format_options', 10, 2);
 function format_options($options, $lang) {

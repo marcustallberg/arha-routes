@@ -94,7 +94,10 @@ class ArhaRoutes {
       $post = $posts[0];
 
       if (class_exists('Polylang')) {
-        ArhaHelpers::check_post_language($post, $lang);
+        $is_ok = ArhaHelpers::check_post_language($post, $lang);
+        if (!$is_ok) {
+          throw new Exception("System didn't find post with post_type '${post_type}' and slug '${slug}'");
+        }
       }
 
       $content = apply_filters('arha_routes/format_post', $post);
@@ -116,14 +119,37 @@ class ArhaRoutes {
     $return_message;
     try {
       $required_params = ['path'];
+      if (class_exists('Polylang')) {
+        $required_params[] = 'lang';
+      }
+
       ArhaHelpers::check_required_params($request, $required_params);
+
+      $lang;
+      if (class_exists('Polylang')) {
+        $lang = $request->get_param('lang');
+        ArhaHelpers::set_polylang_curlang($lang);
+      }
 
       $unescaped_path = $request->get_param('path');
       $path           = stripslashes($unescaped_path);
 
-      $page = get_page_by_path($path, 'OBJECT', 'page');
+      $page;
+      if ($path === '/') {
+        $page = ArhaHelpers::get_front_page();
+      } else {
+        $page = get_page_by_path($path, 'OBJECT', 'page');
+      }
+
       if (!$page) {
         throw new Exception("Didn't find page with path '${path}'");
+      }
+
+      if (class_exists('Polylang')) {
+        $is_ok = ArhaHelpers::check_post_language($page, $lang);
+        if (!$is_ok) {
+          throw new Exception("Didn't find page with path '${path}'");
+        }
       }
 
       $content = apply_filters('arha_routes/format_page', $page);
