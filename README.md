@@ -65,14 +65,15 @@ function format_options($options) {
 Arha Routes supports Polylang-plugin, which allows users to create
 content in multiple languages.
 
-Activating Polylang changes how some endpoints work:
+Activating Polylang changes how endpoints work:
 
 - all routes require additional `lang`-param
   - Example: `/wp-json/arha/v1/archive?post_type=products&posts_per_page=10&paged=1&orderby=date&order=ASC&lang=en`
-- `page`-route doesn't support language prefix in path, use path after it
-  - Example: Permalink in WP `/zh/info`, use like this `/wp-json/arha/v1/page?path=/info&lang=zh`
+- `page`-route doesn't support language prefix in path
+  - Example: Permalink `/zh/info`, use like this `/wp-json/arha/v1/page?path=/info&lang=zh`
+  - Example: Permalink `/en/info/test`, use like this `/wp-json/arha/v1/page?path=/info/test&lang=zh`
 - `options`-route passes `lang`-param forward to `arha_routes/format_options`-filter
-  - Developer can then Polylang's language model to this language with `ArhaHelpers::set_polylang_curlang($lang)` if needed.
+  - Developer can then set Polylang's language model to this language with `ArhaHelpers::set_polylang_curlang($lang)` if needed.
 ```
 add_filter('arha_routes/format_options', 'format_options', 10, 2);
 function format_options($options, $lang) {

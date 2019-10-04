@@ -63,22 +63,19 @@ class ArhaRoutes {
       }
       ArhaHelpers::check_required_params($request, $required_params);
 
-      $filter    = 'arha_routes/post_excluded_post_types';
       $post_type = $request->get_param('post_type');
       if (!post_type_exists($post_type)) {
-        throw new Exception("post_type-param wasn't found on System");
+        throw new Exception("post_type wasn't found on System");
       }
+
+      $filter = 'arha_routes/post_excluded_post_types';
       ArhaHelpers::check_excluded_post_types($filter, $post_type);
 
       $slug = $request->get_param('slug');
 
-      $post_status = $post_type == 'attachment' ? 'inherit' : 'publish';
-
       $args = [
-        'name'        => $slug,
-        'post_type'   => $post_type,
-        'numberposts' => 1,
-        'post_status' => $post_status,
+        'slug'      => $slug,
+        'post_type' => $post_type,
       ];
 
       $lang;
@@ -87,17 +84,9 @@ class ArhaRoutes {
         $args['lang'] = $lang;
       }
 
-      $posts = get_posts($args);
-      if (sizeof($posts) == 0) {
+      $post = ArhaHelpers::get_post($args);
+      if (!$post) {
         throw new Exception("System didn't find post with post_type '${post_type}' and slug '${slug}'");
-      }
-      $post = $posts[0];
-
-      if (class_exists('Polylang')) {
-        $is_ok = ArhaHelpers::check_post_language($post, $lang);
-        if (!$is_ok) {
-          throw new Exception("System didn't find post with post_type '${post_type}' and slug '${slug}'");
-        }
       }
 
       $content = apply_filters('arha_routes/format_post', $post);
@@ -125,22 +114,27 @@ class ArhaRoutes {
 
       ArhaHelpers::check_required_params($request, $required_params);
 
-      $lang;
-      if (class_exists('Polylang')) {
-        $lang = $request->get_param('lang');
-        ArhaHelpers::set_polylang_curlang($lang);
-      }
-
       $unescaped_path = $request->get_param('path');
       $path           = stripslashes($unescaped_path);
 
-      $page;
+      $page = null;
       if ($path === '/') {
         $page = ArhaHelpers::get_front_page();
       } else {
-        $page = get_page_by_path($path, 'OBJECT', 'page');
-      }
+        $args = [
+          'post_type' => 'page',
+          'path'      => $path,
+        ];
 
+        if (class_exists('Polylang')) {
+          $lang = $request->get_param('lang');
+          ArhaHelpers::set_polylang_curlang($lang);
+          $args['lang'] = $lang;
+        }
+        $page = ArhaHelpers::get_post($args);
+        return $page;
+      }
+      return $page;
       if (!$page) {
         throw new Exception("Didn't find page with path '${path}'");
       }
@@ -202,11 +196,11 @@ class ArhaRoutes {
       }
       ArhaHelpers::check_required_params($request, $required_params);
 
-      $filter    = 'arha_routes/archive_excluded_post_types';
       $post_type = $request->get_param('post_type');
       if (!post_type_exists($post_type)) {
         throw new Exception("Post_type wasn't found on System");
       }
+      $filter = 'arha_routes/archive_excluded_post_types';
       ArhaHelpers::check_excluded_post_types($filter, $post_type);
 
       $posts_per_page = $request->get_param('posts_per_page');
