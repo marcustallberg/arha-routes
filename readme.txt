@@ -1,4 +1,11 @@
-# Arha Routes
+=== Arha Routes ===
+Contributors: attlii
+Tags: rest, endpoint, multilingual, bilingual, language, multilanguage, international
+Tested up to: 5.3
+Requires at least: 5.0
+Requires PHP: 7.1.16
+Stable tag: master
+
 
 Wordpress plugin that helps to serve content through REST routes and gives
 customizability to developers through filters.
