@@ -67,10 +67,17 @@ function format_options($options) {
 }
 ```
 
+## SearchWP
+
+Arha Routes supports SearchWP-plugin, which lets WP users to make keyword search engine for their content.
+
+Activating SearchWP-plugin adds optional keyword-search functionality to `archive`-route. This is done by adding `s=KEYWORD` to the route
+- Example: `/wp-json/arha/v1/archive?post_type=products&posts_per_page=10&paged=1&orderby=date&order=ASC&s=monitor`
+
+
 ## Polylang
 
-Arha Routes supports Polylang-plugin, which allows users to create
-content in multiple languages.
+Arha Routes supports Polylang-plugin, which allows users to create content in multiple languages.
 
 Activating Polylang changes how endpoints work:
 
@@ -87,3 +94,9 @@ function format_options($options, $lang) {
   return $options;
 }
 ```
+
+## Polylang + SearchWP
+
+In order to make these two plugins work together, you need to add extra plugin to WP installation.
+
+https://searchwp.com/extensions/polylang-integration/

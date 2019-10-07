@@ -2,7 +2,7 @@
 /*
 Plugin Name: Arha Routes
 Description: Adds REST endpoints for Headless setup
-Version: 1.0.0
+Version: 1.0.1
 Author: Atte Liimatainen
  */
 
@@ -19,7 +19,7 @@ class ArhaRoutes {
   protected $_api_version;
 
   public function __construct() {
-    $this->_version     = '1.0.0';
+    $this->_version     = '1.0.1';
     $this->_slug        = 'arha-routes';
     $this->_namespace   = 'arha';
     $this->_api_version = 'v1';
@@ -80,7 +80,8 @@ class ArhaRoutes {
 
       $lang;
       if (class_exists('Polylang')) {
-        $lang         = $request->get_param('lang');
+        $lang = $request->get_param('lang');
+        ArhaHelpers::check_language_availability($lang);
         $args['lang'] = $lang;
       }
 
@@ -132,18 +133,10 @@ class ArhaRoutes {
           $args['lang'] = $lang;
         }
         $page = ArhaHelpers::get_post($args);
-        return $page;
-      }
-      return $page;
-      if (!$page) {
-        throw new Exception("Didn't find page with path '${path}'");
       }
 
-      if (class_exists('Polylang')) {
-        $is_ok = ArhaHelpers::check_post_language($page, $lang);
-        if (!$is_ok) {
-          throw new Exception("Didn't find page with path '${path}'");
-        }
+      if (!$page) {
+        throw new Exception("Didn't find page with path '${path}'");
       }
 
       $content = apply_filters('arha_routes/format_page', $page);
@@ -200,6 +193,7 @@ class ArhaRoutes {
       if (!post_type_exists($post_type)) {
         throw new Exception("Post_type wasn't found on System");
       }
+
       $filter = 'arha_routes/archive_excluded_post_types';
       ArhaHelpers::check_excluded_post_types($filter, $post_type);
 
@@ -219,6 +213,7 @@ class ArhaRoutes {
       ArhaHelpers::check_orderby_param($orderby);
 
       $order = $request->get_param('order');
+      $order = strtoupper($order);
       if ($order !== 'ASC' && $order !== 'DESC') {
         throw new Exception('Order param can only be ASC or DESC');
       }
@@ -244,10 +239,21 @@ class ArhaRoutes {
       }
 
       if (class_exists('Polylang')) {
-        $lang         = $request->get_param('lang');
+        $lang = $request->get_param('lang');
+        ArhaHelpers::check_language_availability($lang);
         $args['lang'] = $lang;
       }
 
+      $s = $request->get_param('s');
+      if ($s) {
+        if (!class_exists('SWP_Query')) {
+          throw new Exception("s-param is disabled");
+        }
+
+        $args['s'] = $s;
+      }
+
+      $query       = $s ? new SWP_Query($args) : new WP_Query($args);
       $query       = new WP_Query($args);
       $found_posts = (int)$query->found_posts;
       $query_posts = $query->posts;
@@ -273,7 +279,6 @@ class ArhaRoutes {
 
     return $return_message;
   }
-
 }
 
 $runner = function () {

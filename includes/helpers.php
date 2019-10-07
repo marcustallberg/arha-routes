@@ -8,7 +8,6 @@ class ArhaHelpers {
   /**
    * Function checks if passed in $post_type is found in results of passed in $filter.
    *
-   * If not, function throw Exception.
    * @param String $filter
    * @param String $post_type
    */
@@ -24,7 +23,7 @@ class ArhaHelpers {
   }
 
   /**
-   * Checks if request object has all required params.
+   * Checks if request object has all required parameters.
    *
    * @param WP_REST_Request $request
    * @param Array $required_params
@@ -39,8 +38,7 @@ class ArhaHelpers {
   }
 
   /**
-   * Function checks if $orderby param is part of a $orderby_values which is copied
-   * from WP documentation and throws exception if it's not.
+   * Function checks if $orderby param is accepted to be get_posts() arguments
    *
    * @param String $orderby
    * @see https://codex.wordpress.org/Template_Tags/get_posts
@@ -62,7 +60,7 @@ class ArhaHelpers {
       'post__in',
     ];
     if (!in_array($orderby, $orderby_values)) {
-      throw new Exception("orderby=$orderby is not acceptable param");
+      throw new Exception("orderby-param is not acceptable");
     }
   }
 
@@ -84,19 +82,31 @@ class ArhaHelpers {
   }
 
   /**
+   * Function checks if language code has been set to any of Wordpress by Polylang-plugin.
+   * if not, function throws exception.
+   *
+   * @param String $lang - language code
+   * @return void
+   */
+  public static function check_language_availability($lang) {
+    if (!function_exists('pll_languages_list')) {
+      throw new Exception("System cannot check language");
+    }
+
+    $langs = pll_languages_list();
+    if (!in_array($lang, $langs)) {
+      throw new Exception("Language not found");
+    }
+  }
+
+  /**
    * Sets Polylang-plugin's current language model to one passed in as param
    * until end of the process
    *
    * @param String $lang - language code
    */
   public static function set_polylang_curlang($lang) {
-    if (!function_exists('pll_languages_list')) {
-      throw new Exception('Language settings are not set.');
-    }
-    $langs = pll_languages_list();
-    if (!in_array($lang, $langs)) {
-      throw new Exception('Language not found.');
-    }
+    self::check_language_availability($lang);
 
     PLL()->curlang = PLL()->model->get_language($lang);
   }
@@ -106,7 +116,7 @@ class ArhaHelpers {
    *
    * Remember to call ArhaHelpers::set_polylang_curlang($lang) before this function, if you use polylang.
    *
-   * @return void
+   * @return WP_Post - WP post
    */
   public static function get_front_page() {
     $frontpage_id = (int)get_option('page_on_front');
@@ -127,8 +137,7 @@ class ArhaHelpers {
   /**
    * This function is used when fetching posts from WP.
    *
-   * Main reason using this over regular WP functions (get_posts() and get_page_by_path()) is that native functions work unreliably
-   * while Polylang installed, especially when different language posts share same slug (Polylang Pro feature).
+   * Main reason using this over regular WP functions (get_posts() and get_page_by_path()) is that native functions work unreliably while Polylang installed, especially when different language posts share same slug (Polylang Pro feature).
    *
    * Function uses mostly code from get_page_by_path() source code to fetch posts from WP database.
    * Additionally when Polylang is activated, it filters out other language posts with 'lang'-property from passed in argument.
@@ -187,6 +196,9 @@ class ArhaHelpers {
 
   /**
    * Uses get_page_by_path()'s steps to prepare $page_path to sql query
+   *
+   * @param String $page_path
+   * @return String $in_string
    */
   public static function prepare_path_to_sql($page_path) {
     $page_path     = rawurlencode(urldecode($page_path));
