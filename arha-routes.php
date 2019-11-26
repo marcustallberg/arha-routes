@@ -2,7 +2,7 @@
 /*
 Plugin Name: Arha Routes
 Description: Adds REST endpoints for Headless setup
-Version: 1.0.1
+Version: 1.0.2
 Author: Atte Liimatainen
  */
 
@@ -13,13 +13,11 @@ if (!defined('WPINC')) {
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
 
 class ArhaRoutes {
-  protected $_version;
   protected $_slug;
   protected $_namespace;
   protected $_api_version;
 
   public function __construct() {
-    $this->_version     = '1.0.1';
     $this->_slug        = 'arha-routes';
     $this->_namespace   = 'arha';
     $this->_api_version = 'v1';
@@ -119,6 +117,13 @@ class ArhaRoutes {
       $path           = stripslashes($unescaped_path);
 
       $page = null;
+
+      $lang;
+      if (class_exists('Polylang')) {
+        $lang = $request->get_param('lang');
+        ArhaHelpers::set_polylang_curlang($lang);
+      }
+
       if ($path === '/') {
         $page = ArhaHelpers::get_front_page();
       } else {
@@ -128,8 +133,6 @@ class ArhaRoutes {
         ];
 
         if (class_exists('Polylang')) {
-          $lang = $request->get_param('lang');
-          ArhaHelpers::set_polylang_curlang($lang);
           $args['lang'] = $lang;
         }
         $page = ArhaHelpers::get_post($args);
@@ -254,7 +257,6 @@ class ArhaRoutes {
       }
 
       $query       = $s ? new SWP_Query($args) : new WP_Query($args);
-      $query       = new WP_Query($args);
       $found_posts = (int)$query->found_posts;
       $query_posts = $query->posts;
 
