@@ -256,6 +256,12 @@ class ArhaRoutes {
         $args['s'] = $s;
       }
 
+      $tax_query = $request->get_param('tax_query');
+      if ($tax_query) {
+        $tax_query         = json_decode($tax_query, true);
+        $args['tax_query'] = $tax_query;
+      }
+
       $query       = $s ? new SWP_Query($args) : new WP_Query($args);
       $found_posts = (int)$query->found_posts;
       $query_posts = $query->posts;

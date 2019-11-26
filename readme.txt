@@ -13,11 +13,21 @@ Wordpress plugin that helps to serve content through REST routes and gives
 customizability to developers through filters.
 
 ## Available Routes
+- `/wp-json/arha/v1/post`
+- `/wp-json/arha/v1/page`
+- `/wp-json/arha/v1/options`
+- `/wp-json/arha/v1/archive`
 
+## Example queries
 - `/wp-json/arha/v1/post?post_type=POST_TYPE&slug=SLUG`
 - `/wp-json/arha/v1/page?path=PATH`
 - `/wp-json/arha/v1/options`
-- `/wp-json/arha/v1/archive?post_type=POST_TYPE&posts_per_page=POSTS_PER_PAGE&paged=PAGED&orderby=ORDERBY&order=ORDER(&meta_key=META_KEY)`
+- `/wp-json/arha/v1/archive?post_type=POST_TYPE&posts_per_page=POSTS_PER_PAGE&paged=PAGED&orderby=ORDERBY&order=ORDER`
+
+### tax_query in archive-route
+- `tax_query` is supported and it works how the query is built for it in `new WP_Query()`
+- `tax_query` value needs to be passed in as stringified json.
+
 
 ## Filters
 
@@ -42,7 +52,7 @@ function format_post($post) {
 }
 ```
 
-- To format `page`-route's page before it's served to client, use `arha_routes/format_page`-filter
+- To format `page`-route's post before it's served to client, use `arha_routes/format_page`-filter
 
 ```
 add_filter('arha_routes/format_page', 'format_page');
@@ -83,13 +93,12 @@ Arha Routes supports Polylang-plugin, which allows users to create content in mu
 
 Activating Polylang changes how endpoints work:
 
-- all routes require additional `lang`-param
+- All routes require additional `lang`-param
   - Example: `/wp-json/arha/v1/archive?post_type=products&posts_per_page=10&paged=1&orderby=date&order=ASC&lang=en`
 - `page`-route doesn't support language prefix in path
   - Example: Permalink `/zh/info`, use like this `/wp-json/arha/v1/page?path=/info&lang=zh`
   - Example: Permalink `/en/info/test`, use like this `/wp-json/arha/v1/page?path=/info/test&lang=zh`
 - `options`-route passes `lang`-param forward to `arha_routes/format_options`-filter
-  - Developer can then set Polylang's language model to this language with `ArhaHelpers::set_polylang_curlang($lang)` if needed.
 ```
 add_filter('arha_routes/format_options', 'format_options', 10, 2);
 function format_options($options, $lang) {

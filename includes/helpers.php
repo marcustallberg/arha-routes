@@ -177,7 +177,6 @@ class ArhaHelpers {
       return $post['in_string'] === $in_string;
     });
 
-    // array_filter adds index number to key
     $posts = array_values($posts);
     if (sizeof($posts) === 0) {
       return null;
@@ -213,7 +212,7 @@ class ArhaHelpers {
 
   /**
    * Self-iterating function that build array of slugs from a post and it's parent posts.
-   * When iteration gets to top level, function implodes built array with "/" and returns result.
+   * When iteration gets to top level, function implodes built array with "/" and returns the result.
    *
    * @param Object $post - post with ID, post_name, post_parent, post_type, post_status properties
    * @param Array $path_arr - array of slugs, used by function itself
