@@ -192,9 +192,12 @@ class ArhaRoutes {
       }
       ArhaHelpers::check_required_params($request, $required_params);
 
-      $post_type = $request->get_param('post_type');
-      if (!post_type_exists($post_type)) {
-        throw new Exception("Post_type wasn't found on System");
+      $post_type  = $request->get_param('post_type');
+      $post_types = gettype($post_type) === 'array' ? $post_type : [$post_type];
+      foreach ($post_types as $post_type) {
+        if (!post_type_exists($post_type)) {
+          throw new Exception("Post_type wasn't found on System");
+        }
       }
 
       $filter = 'arha_routes/archive_excluded_post_types';
@@ -262,7 +265,8 @@ class ArhaRoutes {
         $args['tax_query'] = $tax_query;
       }
 
-      $query       = $s ? new SWP_Query($args) : new WP_Query($args);
+      $query = $s ? new SWP_Query($args) : new WP_Query($args);
+
       $found_posts = (int)$query->found_posts;
       $query_posts = $query->posts;
 

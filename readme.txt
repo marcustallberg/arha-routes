@@ -26,8 +26,10 @@ customizability to developers through filters.
 
 ### tax_query in archive-route
 - `tax_query` is supported and it works how the query is built for it in `new WP_Query()`
-- `tax_query` value needs to be passed in as stringified json.
+- `tax_query` value needs to be passed in as stringified json
 
+### Multiple post_types in archive-route
+- To pass multiple post_types in archive-route, use syntax that lets PHP read GET-param as an array. https://stackoverflow.com/a/9547490
 
 ## Filters
 
