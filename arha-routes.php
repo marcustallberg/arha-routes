@@ -198,10 +198,9 @@ class ArhaRoutes {
         if (!post_type_exists($post_type)) {
           throw new Exception("Post_type wasn't found on System");
         }
+        $filter = 'arha_routes/archive_excluded_post_types';
+        ArhaHelpers::check_excluded_post_types($filter, $post_type);
       }
-
-      $filter = 'arha_routes/archive_excluded_post_types';
-      ArhaHelpers::check_excluded_post_types($filter, $post_type);
 
       $posts_per_page = $request->get_param('posts_per_page');
       $posts_per_page = (int)$posts_per_page;
@@ -224,17 +223,16 @@ class ArhaRoutes {
         throw new Exception('Order param can only be ASC or DESC');
       }
 
-      $status = $post_type == 'attachment' ? 'inherit' : 'publish';
+      $status = in_array('attachment', $post_types) ? 'inherit' : 'publish';
 
       $args = [
-        'post_type'      => $post_type,
+        'post_type'      => $post_types,
         'posts_per_page' => $posts_per_page,
         'paged'          => $paged,
         'orderby'        => $orderby,
         'order'          => $order,
         'status'         => $status,
       ];
-
       if ($orderby == 'meta_value' || $orderby == 'meta_value_num') {
         $meta_key = $request->get_param('meta_key');
         if (!$meta_key) {
@@ -268,7 +266,8 @@ class ArhaRoutes {
       $query = $s ? new SWP_Query($args) : new WP_Query($args);
 
       $found_posts = (int)$query->found_posts;
-      $query_posts = $query->posts;
+
+      $query_posts = is_array($query->posts) ? $query->posts : [];
 
       $posts = array_map(function ($post) {
         return apply_filters('arha_routes/format_archive_post', $post);
