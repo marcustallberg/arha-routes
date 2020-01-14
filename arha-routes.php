@@ -244,7 +244,7 @@ class ArhaRoutes {
 
       if (class_exists('Polylang')) {
         $lang = $request->get_param('lang');
-        ArhaHelpers::check_language_availability($lang);
+        ArhaHelpers::set_polylang_curlang($lang);
         $args['lang'] = $lang;
       }
 
