@@ -24,9 +24,9 @@ customizability to developers through filters.
 - `/wp-json/arha/v1/options`
 - `/wp-json/arha/v1/archive?post_type=POST_TYPE&posts_per_page=POSTS_PER_PAGE&paged=PAGED&orderby=ORDERBY&order=ORDER`
 
-### tax_query in archive-route
-- `tax_query` is supported and it works how the query is built for it in `new WP_Query()`
-- `tax_query` value needs to be passed in as stringified json
+### tax_query and meta_query in archive-route
+- `tax_query` and `meta_query` are supported and they work how the query is built for it in `new WP_Query()`
+- both needs their values to bes passed in as stringified json
 
 ### Multiple post_types in archive-route
 - To pass multiple post_types in archive-route, use syntax that lets PHP read GET-param as an array. https://stackoverflow.com/a/9547490
@@ -39,6 +39,7 @@ customizability to developers through filters.
 ```
 add_filter('arha_routes/archive_excluded_post_types', 'exclude_post_types');
 add_filter('arha_routes/post_excluded_post_types', 'exclude_post_types');
+
 function exclude_post_types($excluded_post_types) {
   $excluded_post_types = ['post'];
   return $excluded_post_types;
@@ -46,18 +47,18 @@ function exclude_post_types($excluded_post_types) {
 ```
 
 - To format `post`-route's post before it's served to client, use `arha_routes/format_post`-filter
-
 ```
 add_filter('arha_routes/format_post', 'format_post');
+
 function format_post($post) {
   return $post;
 }
 ```
 
 - To format `page`-route's post before it's served to client, use `arha_routes/format_page`-filter
-
 ```
 add_filter('arha_routes/format_page', 'format_page');
+
 function format_page($page) {
   return $page;
 }
@@ -73,9 +74,9 @@ function format_archive_post($post) {
 ```
 
 - `options`-route returns empty result by default. To add content to it, use `arha_routes/format_options`-filter
-
 ```
 add_filter('arha_routes/format_options', 'format_options');
+
 function format_options($options) {
   return $options;
 }

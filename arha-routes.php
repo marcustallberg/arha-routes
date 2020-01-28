@@ -2,7 +2,7 @@
 /*
 Plugin Name: Arha Routes
 Description: Adds REST endpoints for Headless setup
-Version: 1.1
+Version: 1.2
 Author: Atte Liimatainen
  */
 
@@ -233,6 +233,7 @@ class ArhaRoutes {
         'order'          => $order,
         'status'         => $status,
       ];
+
       if ($orderby == 'meta_value' || $orderby == 'meta_value_num') {
         $meta_key = $request->get_param('meta_key');
         if (!$meta_key) {
@@ -261,6 +262,12 @@ class ArhaRoutes {
       if ($tax_query) {
         $tax_query         = json_decode($tax_query, true);
         $args['tax_query'] = $tax_query;
+      }
+
+      $meta_query = $request->get_param('meta_query');
+      if ($meta_query) {
+        $meta_query         = json_decode($meta_query, true);
+        $args['meta_query'] = $meta_query;
       }
 
       $query = $s ? new SWP_Query($args) : new WP_Query($args);
