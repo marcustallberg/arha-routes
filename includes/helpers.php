@@ -152,6 +152,7 @@ class ArhaHelpers {
     $page_path   = isset($args['path']) ? $args['path'] : $args['slug'];
     $post_type   = $args['post_type'];
     $post_status = $args['post_type'] == 'attachment' ? 'inherit' : 'publish';
+    $post_status = isset($args['post_status']) ? $args['post_status'] : $post_status;
 
     $in_string = self::prepare_path_to_sql($page_path);
     $sql       = "

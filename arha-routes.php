@@ -76,6 +76,12 @@ class ArhaRoutes {
         'post_type' => $post_type,
       ];
 
+      $post_status = $request->get_param('post_status');
+      $allowed_additional_post_status = apply_filters('arha_routes/post_allowed_additional_post_status', []);
+      if (($post_status) && in_array($post_status, $allowed_additional_post_status)) {
+          $args['post_status'] = $post_status;
+      }
+
       $lang;
       if (class_exists('Polylang')) {
         $lang = $request->get_param('lang');
